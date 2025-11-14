@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -50,35 +51,63 @@ func main() {
 			case token.ECHO, token.EXIT, token.TYPE:
 				fmt.Printf("%s is a shell builtin", val.Val)
 			default:
-				p := os.Getenv("PATH")
-				dirs := strings.Split(p, string(os.PathListSeparator))
-				found := false
-				for _, dir := range dirs {
-					info, err := os.Stat(fmt.Sprintf("%s/%s", dir, val.Val))
-					if err != nil {
-						continue
-					}
-					if info.IsDir() {
-						continue
-					}
-					md := info.Mode()
-					isExecutable := md&0111 != 0
-					if !isExecutable {
-						continue
-					}
-					fmt.Printf("%s is %s/%s", val.Val, dir, val.Val)
-					found = true
-					break
-				}
+				path, found := findProgInPath(val.Val)
 				if !found {
 					fmt.Printf("%s: not found", val.Val)
+				} else {
+					fmt.Printf("%s is %s/%s", val.Val, path, val.Val)
 				}
 
 			}
 			fmt.Println()
 
 		default:
-			fmt.Fprintf(os.Stdout, "%s: command not found\n", mainCmd.Val)
+			path, ok := findProgInPath(mainCmd.Val)
+			if !ok {
+				fmt.Fprintf(os.Stdout, "%s: command not found\n", mainCmd.Val)
+				continue
+
+			}
+			optAndArgs := make([]string, 0)
+			for {
+				tok := t.NextToken()
+				if tok.Type == token.EOF {
+					break
+				}
+				optAndArgs = append(optAndArgs, tok.Val)
+			}
+			cmd := exec.Command(path, optAndArgs...)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println(string(output))
 		}
 	}
+}
+
+func findProgInPath(prog string) (string, bool) {
+	var path string
+	p := os.Getenv("PATH")
+	dirs := strings.Split(p, string(os.PathListSeparator))
+	found := false
+	for _, dir := range dirs {
+		info, err := os.Stat(fmt.Sprintf("%s/%s", dir, prog))
+		if err != nil {
+			continue
+		}
+		if info.IsDir() {
+			continue
+		}
+		md := info.Mode()
+		isExecutable := md&0111 != 0
+		if !isExecutable {
+			continue
+		}
+		path = dir
+		found = true
+		break
+	}
+	return path, found
 }
