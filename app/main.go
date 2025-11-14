@@ -80,6 +80,7 @@ func main() {
 			if err != nil {
 				fmt.Printf("cd: %s: No such file or directory", path.Val)
 			}
+			fmt.Println()
 
 		default:
 			_, ok := findProgInPath(mainCmd.Val)
