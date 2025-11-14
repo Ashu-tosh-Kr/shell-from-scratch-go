@@ -1,18 +1,24 @@
 package token
 
 type TokenType string
+type SubTokenType string
 
 type Token struct {
-	Type TokenType
-	Val  string
+	Type    TokenType
+	SubType SubTokenType
+	Val     string
 }
 
 const (
-	ECHO       TokenType = "echo"
-	EXIT       TokenType = "exit"
-	TYPE       TokenType = "type"
-	INVALIDCMD TokenType = "InvalidCmd"
-	ARG        TokenType = "ARG"
-	OPT        TokenType = "OPT"
-	EOF        TokenType = "EOF"
+	CMD TokenType = "CMD"
+	ARG TokenType = "ARG"
+	OPT TokenType = "OPT"
+	EOF TokenType = "EOF"
+)
+
+const (
+	INVALIDCMD SubTokenType = "InvalidCmd"
+	ECHO       SubTokenType = "echo"
+	EXIT       SubTokenType = "exit"
+	TYPE       SubTokenType = "type"
 )

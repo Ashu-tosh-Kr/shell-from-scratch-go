@@ -21,7 +21,7 @@ func main() {
 		b = b[:len(b)-1]
 		t := tokenizer.NewTokenizer(string(b))
 		mainCmd := t.NextToken()
-		switch mainCmd.Type {
+		switch mainCmd.SubType {
 		case token.EXIT:
 			arg := t.NextToken()
 			if arg.Type != token.ARG {
@@ -40,6 +40,17 @@ func main() {
 					break
 				}
 				fmt.Print(val.Val + " ")
+			}
+			fmt.Println()
+		case token.TYPE:
+			val := t.NextToken()
+			typ := token.SubTokenType(val.Val)
+			switch typ {
+			case token.ECHO, token.EXIT, token.TYPE:
+				fmt.Printf("%s is a shell builin", val.Val)
+			default:
+				fmt.Printf("%s: not found", val.Val)
+
 			}
 			fmt.Println()
 
