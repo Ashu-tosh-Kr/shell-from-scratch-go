@@ -62,7 +62,7 @@ func main() {
 			fmt.Println()
 
 		default:
-			path, ok := findProgInPath(mainCmd.Val)
+			_, ok := findProgInPath(mainCmd.Val)
 			if !ok {
 				fmt.Fprintf(os.Stdout, "%s: command not found\n", mainCmd.Val)
 				continue
@@ -76,7 +76,7 @@ func main() {
 				}
 				optAndArgs = append(optAndArgs, tok.Val)
 			}
-			cmd := exec.Command(fmt.Sprintf("%s/%s", path, mainCmd.Val), optAndArgs...)
+			cmd := exec.Command(mainCmd.Val, optAndArgs...)
 			output, _ := cmd.CombinedOutput()
 			if err != nil {
 				log.Fatal(err)
