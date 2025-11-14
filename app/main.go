@@ -18,12 +18,14 @@ func main() {
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		b, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+		b = b[:len(b)-1]
 		if err != nil {
 			log.Fatal("error reading input")
 		}
 		cmd := string(b)
 		splittedCmd := strings.Split(cmd, " ")
 		mainCmd := splittedCmd[0]
+		// fmt.Print(mainCmd)
 		switch mainCmd {
 		case "exit":
 			subCmd := "0"
@@ -43,7 +45,7 @@ func main() {
 			fmt.Println()
 
 		default:
-			fmt.Fprintf(os.Stdout, "%s: command not found\n", splittedCmd[0])
+			fmt.Fprintf(os.Stdout, "%s: command not found\n", mainCmd)
 		}
 
 	}
