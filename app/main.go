@@ -61,6 +61,15 @@ func main() {
 			}
 			fmt.Println()
 
+		case token.PWD:
+			argsOrOptions := t.NextToken()
+			if argsOrOptions.Type != token.EOF {
+				fmt.Println("pwd: too many arguments")
+				continue
+			}
+			path, _ := os.Getwd()
+			fmt.Println(path)
+
 		default:
 			_, ok := findProgInPath(mainCmd.Val)
 			if !ok {

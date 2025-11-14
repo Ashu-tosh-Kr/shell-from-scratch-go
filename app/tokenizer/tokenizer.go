@@ -42,6 +42,8 @@ func (t *Tokenizer) NextToken() token.Token {
 			tok = newToken(token.CMD, token.ECHO, t.word)
 		case "type":
 			tok = newToken(token.CMD, token.TYPE, t.word)
+		case "pwd":
+			tok = newToken(token.CMD, token.PWD, t.word)
 		default:
 			tok = newToken(token.CMD, token.INVALIDCMD, t.word)
 		}

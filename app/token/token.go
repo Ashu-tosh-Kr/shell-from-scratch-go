@@ -21,4 +21,5 @@ const (
 	ECHO       SubTokenType = "echo"
 	EXIT       SubTokenType = "exit"
 	TYPE       SubTokenType = "type"
+	PWD        SubTokenType = "pwd"
 )
