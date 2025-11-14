@@ -22,4 +22,5 @@ const (
 	EXIT       SubTokenType = "exit"
 	TYPE       SubTokenType = "type"
 	PWD        SubTokenType = "pwd"
+	CD         SubTokenType = "cd"
 )

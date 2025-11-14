@@ -70,6 +70,17 @@ func main() {
 			path, _ := os.Getwd()
 			fmt.Println(path)
 
+		case token.CD:
+			path := t.NextToken()
+			if path.Type != token.ARG {
+				fmt.Printf("cd: %s: No such file or directory", path.Val)
+				continue
+			}
+			err := os.Chdir(path.Val)
+			if err != nil {
+				fmt.Printf("cd: %s: No such file or directory", path.Val)
+			}
+
 		default:
 			_, ok := findProgInPath(mainCmd.Val)
 			if !ok {
