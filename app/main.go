@@ -48,7 +48,7 @@ func main() {
 			val := t.NextToken()
 			typ := token.SubTokenType(val.Val)
 			switch typ {
-			case token.ECHO, token.EXIT, token.TYPE:
+			case token.ECHO, token.EXIT, token.TYPE, token.PWD:
 				fmt.Printf("%s is a shell builtin", val.Val)
 			default:
 				path, found := findProgInPath(val.Val)
