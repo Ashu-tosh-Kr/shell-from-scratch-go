@@ -47,7 +47,7 @@ func main() {
 			typ := token.SubTokenType(val.Val)
 			switch typ {
 			case token.ECHO, token.EXIT, token.TYPE:
-				fmt.Printf("%s is a shell builin", val.Val)
+				fmt.Printf("%s is a shell builtin", val.Val)
 			default:
 				fmt.Printf("%s: not found", val.Val)
 
