@@ -73,14 +73,13 @@ func main() {
 		case token.CD:
 			path := t.NextToken()
 			if path.Type != token.ARG {
-				fmt.Printf("cd: %s: No such file or directory", path.Val)
+				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
 				continue
 			}
 			err := os.Chdir(path.Val)
 			if err != nil {
-				fmt.Printf("cd: %s: No such file or directory", path.Val)
+				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
 			}
-			fmt.Println()
 
 		default:
 			_, ok := findProgInPath(mainCmd.Val)
