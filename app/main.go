@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/codecrafters-io/shell-starter-go/app/token"
 	"github.com/codecrafters-io/shell-starter-go/app/tokenizer"
@@ -49,7 +50,29 @@ func main() {
 			case token.ECHO, token.EXIT, token.TYPE:
 				fmt.Printf("%s is a shell builtin", val.Val)
 			default:
-				fmt.Printf("%s: not found", val.Val)
+				p := os.Getenv("PATH")
+				dirs := strings.Split(p, string(os.PathListSeparator))
+				found := false
+				for _, dir := range dirs {
+					info, err := os.Stat(fmt.Sprintf("%s/%s", dir, val.Val))
+					if err != nil {
+						continue
+					}
+					if info.IsDir() {
+						continue
+					}
+					md := info.Mode()
+					isExecutable := md&0111 != 0
+					if !isExecutable {
+						continue
+					}
+					fmt.Printf("%s is %s/%s", val.Val, dir, val.Val)
+					found = true
+					break
+				}
+				if !found {
+					fmt.Printf("%s: not found", val.Val)
+				}
 
 			}
 			fmt.Println()
