@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // Ensures gofmt doesn't remove the "fmt" and "os" imports in stage 1 (feel free to remove this!)
@@ -14,7 +15,15 @@ func main() {
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		var cmd string
-		fmt.Scanln(&cmd)
+		var subcmd string
+		fmt.Scanln(&cmd, &subcmd)
+		if cmd == "exit" {
+			v, err := strconv.Atoi(subcmd)
+			if err != nil {
+				fmt.Fprint(os.Stdout, "invalid code")
+			}
+			os.Exit(v)
+		}
 		fmt.Fprintf(os.Stdout, "%s: command not found\n", cmd)
 
 	}
