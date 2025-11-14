@@ -76,8 +76,8 @@ func main() {
 				}
 				optAndArgs = append(optAndArgs, tok.Val)
 			}
-			cmd := exec.Command(path, optAndArgs...)
-			output, err := cmd.CombinedOutput()
+			cmd := exec.Command(fmt.Sprintf("%s/%s", path, mainCmd.Val), optAndArgs...)
+			output, _ := cmd.CombinedOutput()
 			if err != nil {
 				log.Fatal(err)
 			}
