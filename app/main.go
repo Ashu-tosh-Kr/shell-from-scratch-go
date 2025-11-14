@@ -76,6 +76,9 @@ func main() {
 				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
 				continue
 			}
+			if path.Val == "~" {
+				path.Val, _ = os.UserHomeDir()
+			}
 			err := os.Chdir(path.Val)
 			if err != nil {
 				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
