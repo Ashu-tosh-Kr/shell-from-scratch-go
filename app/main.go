@@ -81,7 +81,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(string(output))
+			fmt.Print(string(output))
 		}
 	}
 }
