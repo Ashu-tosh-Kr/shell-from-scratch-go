@@ -104,7 +104,8 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 				cmd.Stdin = stdIn
 				output, err := cmd.CombinedOutput()
 				if err != nil {
-					fmt.Print(err.Error())
+					fmt.Fprintf(stdOut, "%s: No such file or directory\n", arg.Val)
+					return
 				}
 				finOut += string(output)
 			}
