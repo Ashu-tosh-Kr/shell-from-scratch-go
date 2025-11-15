@@ -17,6 +17,7 @@ const (
 	CUSTOM  TokenType = "CUSTOM"
 	ARG     TokenType = "ARG"
 	GT      TokenType = ">"
+	GT2     TokenType = "2>"
 	LT      TokenType = "<"
 	PIPE    TokenType = "|"
 	EOF     TokenType = "EOF"

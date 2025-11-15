@@ -60,6 +60,12 @@ func (p *Parser) parseCmd() ast.BaseCmd {
 
 func (p *Parser) parseRedirectCmd(cmd ast.BaseCmd) ast.RedirectCmd {
 	redir := ast.RedirectCmd{Cmd: cmd}
+	if p.curToken.Type == token.GT {
+		redir.RedirStdOut = true
+	}
+	if p.curToken.Type == token.GT2 {
+		redir.RedirStdErr = true
+	}
 	p.nextToken()
 	redir.RedirectTo = p.curToken
 	p.nextToken()

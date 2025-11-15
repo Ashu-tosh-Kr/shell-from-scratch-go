@@ -10,8 +10,10 @@ type SimpleCmd struct {
 }
 
 type RedirectCmd struct {
-	Cmd        BaseCmd
-	RedirectTo token.Token
+	Cmd         BaseCmd
+	RedirectTo  token.Token
+	RedirStdErr bool
+	RedirStdOut bool
 }
 
 type PipedCmd struct {

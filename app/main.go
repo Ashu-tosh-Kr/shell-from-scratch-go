@@ -150,7 +150,15 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 			fmt.Fprintf(stdOut, "invalid file\n")
 			return
 		}
-		eval(stmt.Cmd, stdIn, file, stdErr)
+		errW := stdErr
+		outW := stdOut
+		if stmt.RedirStdErr {
+			errW = file
+		}
+		if stmt.RedirStdOut {
+			outW = file
+		}
+		eval(stmt.Cmd, stdIn, outW, errW)
 	}
 }
 
