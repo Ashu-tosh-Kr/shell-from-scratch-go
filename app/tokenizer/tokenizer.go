@@ -49,6 +49,7 @@ func (t *Tokenizer) readWord() {
 
 }
 func (t *Tokenizer) NextToken() token.Token {
+
 	var tok token.Token
 	t.skipWhilespace()
 	if !t.cmdRead {
@@ -66,13 +67,19 @@ func (t *Tokenizer) NextToken() token.Token {
 		case "cat":
 			tok = newToken(token.CAT, t.word)
 		default:
-			tok = newToken(token.ILLEGAL, t.word)
+			tok = newToken(token.CUSTOM, t.word)
 		}
 		t.cmdRead = true
 	} else {
-		if t.word == "\n" {
+		switch t.word {
+		case "\n":
 			tok = newToken(token.EOF, "")
-		} else {
+		case ">":
+			tok = newToken(token.GT, t.word)
+		case "|":
+			tok = newToken(token.PIPE, t.word)
+			t.cmdRead = false
+		default:
 			tok = newToken(token.ARG, t.word)
 		}
 	}
