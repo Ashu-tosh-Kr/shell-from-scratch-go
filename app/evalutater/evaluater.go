@@ -128,7 +128,9 @@ func (e *Evaluator) Eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteC
 					break
 				}
 				output = append(output, fmt.Sprintf("\t%v %s", cnt, ln))
-				output = output[max(0, len(output)-n):]
+				if n != -1 {
+					output = output[max(0, len(output)-n):]
+				}
 				cnt++
 
 			}
