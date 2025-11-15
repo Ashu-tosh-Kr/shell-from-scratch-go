@@ -112,15 +112,28 @@ func (e *Evaluator) Eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteC
 			if err != nil {
 				break
 			}
+			n := -1
+			if len(stmt.Args) != 0 {
+				n, err = strconv.Atoi(stmt.Args[0].Val)
+				if err != nil {
+					n = -1
+				}
+			}
 			rd := bufio.NewReader(f)
 			cnt := 1
+			var output []string
 			for {
 				ln, err := rd.ReadString('\n')
 				if err != nil {
 					break
 				}
-				fmt.Fprintf(stdOut, "\t%v %s", cnt, ln)
+				output = append(output, fmt.Sprintf("\t%v %s", cnt, ln))
+				output = output[max(0, len(output)-n):]
 				cnt++
+
+			}
+			for _, hist := range output {
+				fmt.Fprint(stdOut, hist)
 			}
 
 		default:
