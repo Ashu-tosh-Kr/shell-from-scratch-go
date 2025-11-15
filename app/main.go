@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/codecrafters-io/shell-starter-go/app/ast"
+	"github.com/codecrafters-io/shell-starter-go/app/parser"
 	"github.com/codecrafters-io/shell-starter-go/app/token"
 	"github.com/codecrafters-io/shell-starter-go/app/tokenizer"
 )
@@ -22,103 +24,111 @@ func main() {
 		}
 		b = b[:len(b)-1]
 		t := tokenizer.NewTokenizer(string(b))
-		mainCmd := t.NextToken()
-		switch mainCmd.Type {
+		p := parser.NewParser(t)
+		cmds := p.Parse()
+		for _, stmt := range cmds.Statements {
+			// fmt.Printf("Type of myInt: %T\n", stmt)
+			fmt.Print(eval(stmt))
+		}
+	}
+}
+
+func eval(stmt ast.BaseCmd) string {
+	switch stmt := stmt.(type) {
+
+	case ast.SimpleCmd:
+		switch stmt.Cmd.Type {
 		case token.EXIT:
-			arg := t.NextToken()
-			if arg.Type != token.ARG {
-				fmt.Fprint(os.Stdout, "invalid code")
+			if len(stmt.Args) > 1 {
+				return "exit: too many arguments"
 			}
-			v, err := strconv.Atoi(arg.Val)
+			v, err := strconv.Atoi(stmt.Args[0].Val)
 			if err != nil {
 				fmt.Fprint(os.Stdout, "invalid code")
 			}
 			os.Exit(v)
 
 		case token.ECHO:
-			for {
-				val := t.NextToken()
-				if val.Type == token.EOF {
+			var output string
+			for _, arg := range stmt.Args {
+
+				if arg.Type == token.EOF {
 					break
 				}
-				fmt.Print(val.Val + " ")
+				output += arg.Val + " "
 			}
-			fmt.Println()
+			output += "\n"
+			return output
 		case token.TYPE:
-			val := t.NextToken()
-			typ := token.TokenType(val.Val)
-			switch typ {
-			case token.ECHO, token.EXIT, token.TYPE, token.PWD:
-				fmt.Printf("%s is a shell builtin", val.Val)
-			default:
-				path, found := findProgInPath(val.Val)
-				if !found {
-					fmt.Printf("%s: not found", val.Val)
-				} else {
-					fmt.Printf("%s is %s/%s", val.Val, path, val.Val)
-				}
+			var output string
+			for _, arg := range stmt.Args {
 
+				typ := token.TokenType(arg.Val)
+				switch typ {
+				case token.ECHO, token.EXIT, token.TYPE, token.PWD:
+					output += fmt.Sprintf("%s is a shell builtin\n", arg.Val)
+				default:
+					path, found := findProgInPath(arg.Val)
+					if !found {
+						output += fmt.Sprintf("%s: not found\n", arg.Val)
+					} else {
+						output += fmt.Sprintf("%s is %s/%s\n", arg.Val, path, arg.Val)
+					}
+
+				}
 			}
-			fmt.Println()
+			return output
 
 		case token.PWD:
-			argsOrOptions := t.NextToken()
-			if argsOrOptions.Type != token.EOF {
-				fmt.Println("pwd: too many arguments")
-				continue
+			if len(stmt.Args) != 0 {
+				return fmt.Sprintln("pwd: too many arguments")
 			}
 			path, _ := os.Getwd()
-			fmt.Println(path)
+			return fmt.Sprintln(path)
 
 		case token.CD:
-			path := t.NextToken()
-			if path.Type != token.ARG {
-				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
-				continue
+			if len(stmt.Args) == 0 {
+				stmt.Args = append(stmt.Args, token.Token{Type: token.ARG, Val: "~"})
 			}
 			homedir, _ := os.UserHomeDir()
-			path.Val = strings.Replace(path.Val, "~", homedir, 1)
-			err := os.Chdir(path.Val)
+			stmt.Args[0].Val = strings.Replace(stmt.Args[0].Val, "~", homedir, 1)
+			err := os.Chdir(stmt.Args[0].Val)
 			if err != nil {
-				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
+				return fmt.Sprintf("cd: %s: No such file or directory\n", stmt.Args[0].Val)
 			}
+			return ""
 		case token.CAT:
-			for {
-				path := t.NextToken()
-				if path.Type == token.EOF {
-					break
-				}
-				cmd := exec.Command("cat", path.Val)
+			var finOut string
+			for _, arg := range stmt.Args {
+				cmd := exec.Command("cat", arg.Val)
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					fmt.Print(err.Error())
 				}
-				fmt.Print(string(output))
+				finOut += string(output)
 			}
+			return finOut
 
 		default:
-			_, ok := findProgInPath(mainCmd.Val)
+			_, ok := findProgInPath(stmt.Cmd.Val)
 			if !ok {
-				fmt.Fprintf(os.Stdout, "%s: command not found\n", mainCmd.Val)
-				continue
-
+				return fmt.Sprintf("%s: command not found\n", stmt.Cmd.Val)
 			}
 			optAndArgs := make([]string, 0)
-			for {
-				tok := t.NextToken()
-				if tok.Type == token.EOF {
-					break
-				}
-				optAndArgs = append(optAndArgs, tok.Val)
+			for _, arg := range stmt.Args {
+				optAndArgs = append(optAndArgs, arg.Val)
 			}
-			cmd := exec.Command(mainCmd.Val, optAndArgs...)
+			cmd := exec.Command(stmt.Cmd.Val, optAndArgs...)
 			output, _ := cmd.CombinedOutput()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Print(string(output))
+
+			return fmt.Sprint(string(output))
 		}
+	case ast.PipedCmd:
+		_ = eval(stmt.Left)
+		return eval(stmt.Right)
+
 	}
+	return "Something went wrong"
 }
 
 func findProgInPath(prog string) (string, bool) {
