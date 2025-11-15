@@ -1,34 +1,36 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/f0947809-bdf1-4584-8f87-1ca98aee97c1)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Shell Implementation in Go
 
-This is a starting point for Go solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+A POSIX compliant shell implementation written in Go that's capable of interpreting shell commands, running external programs and builtin commands like cd, pwd, echo and more.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+## Capabilities
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+### Built-in Commands
+- **`echo`** - Display text to stdout
+- **`exit`** - Exit the shell with optional exit code
+- **`pwd`** - Print current working directory
+- **`cd`** - Change directory (supports `~` for home directory)
+- **`type`** - Display whether command is builtin or external program
+- **`cat`** - Display file contents (also supports stdin)
+- **`history`** - Show command history with optional number limit
 
-# Passing the first stage
+### Shell Features
+- **Command Execution** - Run external programs from PATH
+- **Pipes** - Chain commands using `|` operator
+- **Output Redirection** - Redirect stdout and stderr using `>`, `>>`, `2>`, `2>>`
+- **Command History** - Automatically tracks all executed commands in `history.txt`
 
-The entry point for your `shell` implementation is in `app/main.go`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+### Highlights
+- **Tokenization & Parsing** - I have implemented a mini interpreter that tokenizes -> parses -> evaluates the commands that are passed by the user
+- **AST-based Evaluation** - My implementation of parser uses pratt parsing create an AST
+- **PATH Resolution** - Automatic lookup of external programs in system PATH
+
+## How to Run
+
+1. Ensure you have Go installed locally (version 1.24 or higher)
+2. Run the following command to start the shell:
 
 ```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+./your_program.sh
 ```
 
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `go (1.24)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.go`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+The main program is implemented in `app/main.go`.
