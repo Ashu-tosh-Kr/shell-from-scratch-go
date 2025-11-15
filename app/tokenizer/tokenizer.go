@@ -1,6 +1,8 @@
 package tokenizer
 
-import "github.com/codecrafters-io/shell-starter-go/app/token"
+import (
+	"github.com/codecrafters-io/shell-starter-go/app/token"
+)
 
 type Tokenizer struct {
 	input   string
@@ -18,12 +20,27 @@ func NewTokenizer(input string) Tokenizer {
 }
 
 func (t *Tokenizer) readWord() {
-	if t.pos == len(t.input) {
+	if t.pos >= len(t.input) {
 		t.word = "\n"
 		return
 	}
 	wrd := ""
-	for t.pos != len(t.input) && t.input[t.pos] != ' ' {
+
+	// read quoted words
+	if t.pos < len(t.input) && (t.input[t.pos] == '"' || t.input[t.pos] == '\'') {
+		delim := t.input[t.pos]
+		t.pos += 1
+		for t.pos < len(t.input) && t.input[t.pos] != delim {
+			wrd += string(t.input[t.pos])
+			t.pos += 1
+		}
+		t.pos += 2
+		t.word = wrd
+		return
+	}
+
+	// read space separated words
+	for t.pos < len(t.input) && t.input[t.pos] != ' ' {
 
 		wrd += string(t.input[t.pos])
 		t.pos += 1
@@ -64,7 +81,7 @@ func (t *Tokenizer) NextToken() token.Token {
 }
 
 func (t *Tokenizer) skipWhilespace() {
-	for t.pos != len(t.input) && t.input[t.pos] == ' ' {
+	for t.pos < len(t.input) && t.input[t.pos] == ' ' {
 		t.pos += 1
 	}
 }
