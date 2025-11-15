@@ -16,6 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	defer historyFile.Close()
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		b, err := bufio.NewReader(os.Stdin).ReadBytes('\n')

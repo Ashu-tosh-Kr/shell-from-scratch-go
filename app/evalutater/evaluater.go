@@ -108,6 +108,7 @@ func (e *Evaluator) Eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteC
 			fmt.Fprint(stdOut, finOut)
 		case token.HISTORY:
 			f, err := os.Open("history.txt")
+			defer f.Close()
 			if err != nil {
 				break
 			}
