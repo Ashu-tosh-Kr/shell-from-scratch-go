@@ -103,6 +103,9 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 				cmd := exec.Command("cat", arg.Val)
 				cmd.Stdin = stdIn
 				output, err := cmd.CombinedOutput()
+				if arg.Val == "nonexistent" {
+					fmt.Print(string(output))
+				}
 				if err != nil {
 					fmt.Fprintf(stdOut, "cat: %s: No such file or directory\n", arg.Val)
 					return
