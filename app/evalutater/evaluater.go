@@ -112,12 +112,14 @@ func (e *Evaluator) Eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteC
 				break
 			}
 			rd := bufio.NewReader(f)
+			cnt := 1
 			for {
 				ln, err := rd.ReadString('\n')
 				if err != nil {
 					break
 				}
-				fmt.Fprint(stdOut, ln)
+				fmt.Fprintf(stdOut, "\t%v %s", cnt, ln)
+				cnt++
 			}
 
 		default:
