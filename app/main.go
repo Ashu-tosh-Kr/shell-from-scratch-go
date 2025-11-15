@@ -69,7 +69,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 
 				typ := token.TokenType(arg.Val)
 				switch typ {
-				case token.ECHO, token.EXIT, token.TYPE, token.PWD, token.CAT, token.CD, token.HISTORY:
+				case token.ECHO, token.EXIT, token.TYPE, token.PWD, token.HISTORY:
 					output += fmt.Sprintf("%s is a shell builtin\n", arg.Val)
 				default:
 					path, found := findProgInPath(arg.Val)
