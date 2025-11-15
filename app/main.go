@@ -123,7 +123,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 		default:
 			_, ok := findProgInPath(stmt.Cmd.Val)
 			if !ok {
-				fmt.Fprintf(stdOut, "%s: command not found\n", stmt.Cmd.Val)
+				fmt.Fprintf(stdErr, "%s: command not found\n", stmt.Cmd.Val)
 			}
 			optAndArgs := make([]string, 0)
 			for _, arg := range stmt.Args {
@@ -131,8 +131,12 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 			}
 			cmd := exec.Command(stmt.Cmd.Val, optAndArgs...)
 			cmd.Stdin = stdIn
-			output, _ := cmd.CombinedOutput()
+			output, err := cmd.CombinedOutput()
 
+			if err != nil {
+				fmt.Fprint(stdErr, string(output))
+				return
+			}
 			fmt.Fprint(stdOut, string(output))
 		}
 	case ast.PipedCmd:

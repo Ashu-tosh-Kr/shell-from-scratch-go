@@ -37,7 +37,7 @@ func (p *Parser) parseStatement() ast.BaseCmd {
 		if token.IsCmd(p.curToken.Type) {
 			stmt = p.parseCmd()
 		}
-		if p.curToken.Type == token.GT {
+		if p.curToken.Type == token.GT || p.curToken.Type == token.GT2 {
 			stmt = p.parseRedirectCmd(stmt)
 		}
 		if p.curToken.Type == token.PIPE {
