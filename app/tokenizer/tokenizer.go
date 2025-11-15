@@ -66,6 +66,8 @@ func (t *Tokenizer) NextToken() token.Token {
 			tok = newToken(token.CD, t.word)
 		case "cat":
 			tok = newToken(token.CAT, t.word)
+		case "history":
+			tok = newToken(token.HISTORY, t.word)
 		default:
 			tok = newToken(token.CUSTOM, t.word)
 		}

@@ -14,6 +14,7 @@ const (
 	PWD     TokenType = "pwd"
 	CD      TokenType = "cd"
 	CAT     TokenType = "cat"
+	HISTORY TokenType = "history"
 	CUSTOM  TokenType = "CUSTOM"
 	ARG     TokenType = "ARG"
 	GT      TokenType = ">"
