@@ -104,7 +104,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 				cmd.Stdin = stdIn
 				output, err := cmd.CombinedOutput()
 				if arg.Val == "nonexistent" {
-					fmt.Print(string(output))
+					fmt.Print(err.Error())
 					fmt.Print(string(output))
 				}
 				if err != nil {
