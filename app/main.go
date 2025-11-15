@@ -83,13 +83,18 @@ func main() {
 				fmt.Printf("cd: %s: No such file or directory\n", path.Val)
 			}
 		case token.CAT:
-			path := t.NextToken()
-			cmd := exec.Command("cat", path.Val)
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				fmt.Print(err.Error())
+			for {
+				path := t.NextToken()
+				if path.Type == token.EOF {
+					break
+				}
+				cmd := exec.Command("cat", path.Val)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					fmt.Print(err.Error())
+				}
+				fmt.Print(string(output))
 			}
-			fmt.Print(string(output))
 
 		default:
 			_, ok := findProgInPath(mainCmd.Val)
