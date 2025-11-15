@@ -37,7 +37,7 @@ func (p *Parser) parseStatement() ast.BaseCmd {
 		if token.IsCmd(p.curToken.Type) {
 			stmt = p.parseCmd()
 		}
-		if p.curToken.Type == token.GT || p.curToken.Type == token.GT2 {
+		if p.curToken.Type == token.GT || p.curToken.Type == token.GT2 || p.curToken.Type == token.RSHIFT || p.curToken.Type == token.RSHIFT2 {
 			stmt = p.parseRedirectCmd(stmt)
 		}
 		if p.curToken.Type == token.PIPE {
@@ -60,10 +60,19 @@ func (p *Parser) parseCmd() ast.BaseCmd {
 
 func (p *Parser) parseRedirectCmd(cmd ast.BaseCmd) ast.RedirectCmd {
 	redir := ast.RedirectCmd{Cmd: cmd}
-	if p.curToken.Type == token.GT {
+	switch p.curToken.Type {
+	case token.GT:
 		redir.RedirStdOut = true
-	}
-	if p.curToken.Type == token.GT2 {
+
+	case token.GT2:
+		redir.RedirStdErr = true
+
+	case token.RSHIFT:
+		redir.AppendMode = true
+		redir.RedirStdOut = true
+
+	case token.RSHIFT2:
+		redir.AppendMode = true
 		redir.RedirStdErr = true
 	}
 	p.nextToken()

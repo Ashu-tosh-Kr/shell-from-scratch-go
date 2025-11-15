@@ -18,6 +18,8 @@ const (
 	ARG     TokenType = "ARG"
 	GT      TokenType = ">"
 	GT2     TokenType = "2>"
+	RSHIFT  TokenType = ">>"
+	RSHIFT2 TokenType = "2>>"
 	LT      TokenType = "<"
 	PIPE    TokenType = "|"
 	EOF     TokenType = "EOF"

@@ -14,6 +14,7 @@ type RedirectCmd struct {
 	RedirectTo  token.Token
 	RedirStdErr bool
 	RedirStdOut bool
+	AppendMode  bool
 }
 
 type PipedCmd struct {

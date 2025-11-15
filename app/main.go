@@ -149,7 +149,13 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 		eval(stmt.Right, r, stdOut, stdErr)
 
 	case ast.RedirectCmd:
-		file, err := os.Create(stmt.RedirectTo.Val)
+		var file *os.File
+		var err error
+		if !stmt.AppendMode {
+			file, err = os.Create(stmt.RedirectTo.Val)
+		} else {
+			file, err = os.OpenFile(stmt.RedirectTo.Val, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		}
 		if err != nil {
 			fmt.Fprintf(stdOut, "invalid file\n")
 			return
