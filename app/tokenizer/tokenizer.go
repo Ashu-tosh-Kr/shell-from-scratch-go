@@ -26,22 +26,18 @@ func (t *Tokenizer) readWord() {
 	}
 	wrd := ""
 
-	// read quoted words
-	if t.pos < len(t.input) && (t.input[t.pos] == '"' || t.input[t.pos] == '\'') {
-		delim := t.input[t.pos]
-		t.pos += 1
-		for t.pos < len(t.input) && t.input[t.pos] != delim {
-			wrd += string(t.input[t.pos])
+	activeQt := ' '
+	// read space separated words unless there are quotes then read ingore till quotes end
+	for t.pos < len(t.input) && (t.input[t.pos] != ' ' || activeQt != ' ') {
+		if t.input[t.pos] == '\'' || t.input[t.pos] == '"' {
+			if activeQt != ' ' {
+				activeQt = ' '
+			} else {
+				activeQt = rune(t.input[t.pos])
+			}
 			t.pos += 1
+			continue
 		}
-		t.pos += 2
-		t.word = wrd
-		return
-	}
-
-	// read space separated words
-	for t.pos < len(t.input) && t.input[t.pos] != ' ' {
-
 		wrd += string(t.input[t.pos])
 		t.pos += 1
 	}
