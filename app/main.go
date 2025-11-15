@@ -23,7 +23,7 @@ func main() {
 		b = b[:len(b)-1]
 		t := tokenizer.NewTokenizer(string(b))
 		mainCmd := t.NextToken()
-		switch mainCmd.SubType {
+		switch mainCmd.Type {
 		case token.EXIT:
 			arg := t.NextToken()
 			if arg.Type != token.ARG {
@@ -46,7 +46,7 @@ func main() {
 			fmt.Println()
 		case token.TYPE:
 			val := t.NextToken()
-			typ := token.SubTokenType(val.Val)
+			typ := token.TokenType(val.Val)
 			switch typ {
 			case token.ECHO, token.EXIT, token.TYPE, token.PWD:
 				fmt.Printf("%s is a shell builtin", val.Val)

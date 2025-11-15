@@ -1,27 +1,20 @@
 package token
 
 type TokenType string
-type SubTokenType string
 
 type Token struct {
-	Type    TokenType
-	SubType SubTokenType
-	Val     string
+	Type TokenType
+	Val  string
 }
 
 const (
-	CMD TokenType = "CMD"
-	ARG TokenType = "ARG"
-	OPT TokenType = "OPT"
-	EOF TokenType = "EOF"
-)
-
-const (
-	INVALIDCMD SubTokenType = "InvalidCmd"
-	ECHO       SubTokenType = "echo"
-	EXIT       SubTokenType = "exit"
-	TYPE       SubTokenType = "type"
-	PWD        SubTokenType = "pwd"
-	CD         SubTokenType = "cd"
-	CAT        SubTokenType = "cat"
+	ECHO    TokenType = "echo"
+	EXIT    TokenType = "exit"
+	TYPE    TokenType = "type"
+	PWD     TokenType = "pwd"
+	CD      TokenType = "cd"
+	CAT     TokenType = "cat"
+	ARG     TokenType = "ARG"
+	EOF     TokenType = "EOF"
+	ILLEGAL TokenType = "ILLEGAL"
 )

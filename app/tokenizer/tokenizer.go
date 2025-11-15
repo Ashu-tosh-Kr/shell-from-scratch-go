@@ -54,28 +54,26 @@ func (t *Tokenizer) NextToken() token.Token {
 	if !t.cmdRead {
 		switch t.word {
 		case "exit":
-			tok = newToken(token.CMD, token.EXIT, t.word)
+			tok = newToken(token.EXIT, t.word)
 		case "echo":
-			tok = newToken(token.CMD, token.ECHO, t.word)
+			tok = newToken(token.ECHO, t.word)
 		case "type":
-			tok = newToken(token.CMD, token.TYPE, t.word)
+			tok = newToken(token.TYPE, t.word)
 		case "pwd":
-			tok = newToken(token.CMD, token.PWD, t.word)
+			tok = newToken(token.PWD, t.word)
 		case "cd":
-			tok = newToken(token.CMD, token.CD, t.word)
+			tok = newToken(token.CD, t.word)
 		case "cat":
-			tok = newToken(token.CMD, token.CAT, t.word)
+			tok = newToken(token.CAT, t.word)
 		default:
-			tok = newToken(token.CMD, token.INVALIDCMD, t.word)
+			tok = newToken(token.ILLEGAL, t.word)
 		}
 		t.cmdRead = true
 	} else {
-		if t.word[0] == '-' {
-			tok = newToken(token.OPT, "", t.word)
-		} else if t.word == "\n" {
-			tok = newToken(token.EOF, "", "")
+		if t.word == "\n" {
+			tok = newToken(token.EOF, "")
 		} else {
-			tok = newToken(token.ARG, "", t.word)
+			tok = newToken(token.ARG, t.word)
 		}
 	}
 	t.readWord()
@@ -88,6 +86,6 @@ func (t *Tokenizer) skipWhilespace() {
 	}
 }
 
-func newToken(typ token.TokenType, subTyp token.SubTokenType, val string) token.Token {
-	return token.Token{Type: typ, SubType: subTyp, Val: val}
+func newToken(typ token.TokenType, val string) token.Token {
+	return token.Token{Type: typ, Val: val}
 }
