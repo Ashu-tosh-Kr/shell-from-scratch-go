@@ -142,6 +142,14 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 			eval(stmt.Left, stdIn, w)
 		}()
 		eval(stmt.Right, r, stdOut)
+
+	case ast.RedirectCmd:
+		file, err := os.Create(stmt.RedirectTo.Val)
+		if err != nil {
+			fmt.Fprintf(stdOut, "invalid file\n")
+			return
+		}
+		eval(stmt.Cmd, stdIn, file)
 	}
 }
 
