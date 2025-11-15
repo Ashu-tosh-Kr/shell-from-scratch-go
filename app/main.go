@@ -136,12 +136,10 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 			err := cmd.Start()
 
 			if err != nil {
-				// fmt.Fprint(stdErr, string(output))
 				return
 			}
-			// fmt.Fprint(stdOut, string(output))
 			if err := cmd.Wait(); err != nil {
-				fmt.Printf("Command finished with error: %v\n", err)
+				return
 			}
 		}
 	case ast.PipedCmd:
