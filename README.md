@@ -30,7 +30,7 @@ A POSIX compliant shell implementation written in Go that's capable of interpret
 2. Run the following command to start the shell:
 
 ```sh
-./your_program.sh
+go run app/main.go
 ```
 
 The main program is implemented in `app/main.go`.
