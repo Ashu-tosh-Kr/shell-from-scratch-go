@@ -23,4 +23,5 @@ const (
 	TYPE       SubTokenType = "type"
 	PWD        SubTokenType = "pwd"
 	CD         SubTokenType = "cd"
+	CAT        SubTokenType = "cat"
 )
