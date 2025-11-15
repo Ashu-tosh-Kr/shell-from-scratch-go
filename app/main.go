@@ -29,12 +29,12 @@ func main() {
 		cmds := p.Parse()
 		for _, stmt := range cmds.Statements {
 			// fmt.Printf("Type of myInt: %T\n", stmt)
-			eval(stmt, os.Stdin, os.Stdout)
+			eval(stmt, os.Stdin, os.Stdout, os.Stderr)
 		}
 	}
 }
 
-func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
+func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr io.WriteCloser) {
 	switch stmt := stmt.(type) {
 
 	case ast.SimpleCmd:
@@ -95,7 +95,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 			stmt.Args[0].Val = strings.Replace(stmt.Args[0].Val, "~", homedir, 1)
 			err := os.Chdir(stmt.Args[0].Val)
 			if err != nil {
-				fmt.Fprintf(stdOut, "cd: %s: No such file or directory\n", stmt.Args[0].Val)
+				fmt.Fprintf(stdErr, "cd: %s: No such file or directory\n", stmt.Args[0].Val)
 			}
 		case token.CAT:
 			var finOut string
@@ -103,12 +103,8 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 				cmd := exec.Command("cat", arg.Val)
 				cmd.Stdin = stdIn
 				output, err := cmd.CombinedOutput()
-				if arg.Val == "nonexistent" {
-					fmt.Print(err.Error())
-					fmt.Print(string(output))
-				}
 				if err != nil {
-					fmt.Fprintf(stdOut, "cat: %s: No such file or directory\n", arg.Val)
+					fmt.Fprintf(stdErr, "cat: %s: No such file or directory\n", arg.Val)
 					return
 				}
 				finOut += string(output)
@@ -144,9 +140,9 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 		defer r.Close()
 		go func() {
 			defer w.Close()
-			eval(stmt.Left, stdIn, w)
+			eval(stmt.Left, stdIn, w, stdErr)
 		}()
-		eval(stmt.Right, r, stdOut)
+		eval(stmt.Right, r, stdOut, stdErr)
 
 	case ast.RedirectCmd:
 		file, err := os.Create(stmt.RedirectTo.Val)
@@ -154,7 +150,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 			fmt.Fprintf(stdOut, "invalid file\n")
 			return
 		}
-		eval(stmt.Cmd, stdIn, file)
+		eval(stmt.Cmd, stdIn, file, stdErr)
 	}
 }
 
