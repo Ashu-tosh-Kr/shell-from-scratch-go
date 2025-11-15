@@ -31,12 +31,16 @@ func (t *Tokenizer) readWord() {
 	for t.pos < len(t.input) && (t.input[t.pos] != ' ' || activeQt != ' ') {
 		if t.input[t.pos] == '\'' || t.input[t.pos] == '"' {
 			if activeQt != ' ' {
-				activeQt = ' '
+				if t.input[t.pos] == byte(activeQt) {
+					activeQt = ' '
+					t.pos += 1
+					continue
+				}
 			} else {
 				activeQt = rune(t.input[t.pos])
+				t.pos += 1
+				continue
 			}
-			t.pos += 1
-			continue
 		}
 		wrd += string(t.input[t.pos])
 		t.pos += 1
