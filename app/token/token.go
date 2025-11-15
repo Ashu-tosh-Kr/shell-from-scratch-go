@@ -29,7 +29,7 @@ const (
 
 func IsCmd(typ TokenType) bool {
 	switch typ {
-	case ECHO, TYPE, PWD, EXIT, CD, CAT, CUSTOM:
+	case ECHO, TYPE, PWD, EXIT, CD, CAT, HISTORY, CUSTOM:
 		return true
 	default:
 		return false
