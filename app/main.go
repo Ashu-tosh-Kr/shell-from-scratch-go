@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -28,19 +29,19 @@ func main() {
 		cmds := p.Parse()
 		for _, stmt := range cmds.Statements {
 			// fmt.Printf("Type of myInt: %T\n", stmt)
-			fmt.Print(eval(stmt))
+			eval(stmt, os.Stdin, os.Stdout)
 		}
 	}
 }
 
-func eval(stmt ast.BaseCmd) string {
+func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser) {
 	switch stmt := stmt.(type) {
 
 	case ast.SimpleCmd:
 		switch stmt.Cmd.Type {
 		case token.EXIT:
 			if len(stmt.Args) > 1 {
-				return "exit: too many arguments"
+				fmt.Fprint(os.Stdout, "exit: too many arguments")
 			}
 			v, err := strconv.Atoi(stmt.Args[0].Val)
 			if err != nil {
@@ -58,7 +59,7 @@ func eval(stmt ast.BaseCmd) string {
 				output += arg.Val + " "
 			}
 			output += "\n"
-			return output
+			fmt.Fprint(stdOut, output)
 		case token.TYPE:
 			var output string
 			for _, arg := range stmt.Args {
@@ -77,14 +78,14 @@ func eval(stmt ast.BaseCmd) string {
 
 				}
 			}
-			return output
+			fmt.Fprint(stdOut, output)
 
 		case token.PWD:
 			if len(stmt.Args) != 0 {
-				return fmt.Sprintln("pwd: too many arguments")
+				fmt.Fprintln(stdOut, "pwd: too many arguments")
 			}
 			path, _ := os.Getwd()
-			return fmt.Sprintln(path)
+			fmt.Fprint(stdOut, fmt.Sprintln(path))
 
 		case token.CD:
 			if len(stmt.Args) == 0 {
@@ -94,41 +95,54 @@ func eval(stmt ast.BaseCmd) string {
 			stmt.Args[0].Val = strings.Replace(stmt.Args[0].Val, "~", homedir, 1)
 			err := os.Chdir(stmt.Args[0].Val)
 			if err != nil {
-				return fmt.Sprintf("cd: %s: No such file or directory\n", stmt.Args[0].Val)
+				fmt.Fprintf(stdOut, "cd: %s: No such file or directory\n", stmt.Args[0].Val)
 			}
-			return ""
 		case token.CAT:
 			var finOut string
 			for _, arg := range stmt.Args {
 				cmd := exec.Command("cat", arg.Val)
+				cmd.Stdin = stdIn
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					fmt.Print(err.Error())
 				}
 				finOut += string(output)
 			}
-			return finOut
+			if len(stmt.Args) == 0 {
+				cmd := exec.Command("cat")
+				cmd.Stdin = stdIn
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					fmt.Print(err.Error())
+				}
+				finOut += string(output)
+			}
+			fmt.Fprint(stdOut, finOut)
 
 		default:
 			_, ok := findProgInPath(stmt.Cmd.Val)
 			if !ok {
-				return fmt.Sprintf("%s: command not found\n", stmt.Cmd.Val)
+				fmt.Fprintf(stdOut, "%s: command not found\n", stmt.Cmd.Val)
 			}
 			optAndArgs := make([]string, 0)
 			for _, arg := range stmt.Args {
 				optAndArgs = append(optAndArgs, arg.Val)
 			}
 			cmd := exec.Command(stmt.Cmd.Val, optAndArgs...)
+			cmd.Stdin = stdIn
 			output, _ := cmd.CombinedOutput()
 
-			return fmt.Sprint(string(output))
+			fmt.Fprint(stdOut, string(output))
 		}
 	case ast.PipedCmd:
-		_ = eval(stmt.Left)
-		return eval(stmt.Right)
-
+		r, w := io.Pipe()
+		defer r.Close()
+		go func() {
+			defer w.Close()
+			eval(stmt.Left, stdIn, w)
+		}()
+		eval(stmt.Right, r, stdOut)
 	}
-	return "Something went wrong"
 }
 
 func findProgInPath(prog string) (string, bool) {
