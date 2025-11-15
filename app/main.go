@@ -58,6 +58,9 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 				}
 				output += arg.Val + " "
 			}
+			if len(output) > 0 {
+				output = output[:len(output)-1]
+			}
 			output += "\n"
 			fmt.Fprint(stdOut, output)
 		case token.TYPE:
