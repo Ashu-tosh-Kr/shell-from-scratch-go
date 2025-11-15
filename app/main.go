@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	f, _ := os.Create("history.txt")
+	f.Close()
 	historyFile, err := os.OpenFile("history.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err.Error())
