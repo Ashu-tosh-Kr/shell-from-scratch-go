@@ -76,6 +76,8 @@ func (t *Tokenizer) NextToken() token.Token {
 			tok = newToken(token.EOF, "")
 		case ">":
 			tok = newToken(token.GT, t.word)
+		case "1>":
+			tok = newToken(token.GT, t.word)
 		case "|":
 			tok = newToken(token.PIPE, t.word)
 			t.cmdRead = false
