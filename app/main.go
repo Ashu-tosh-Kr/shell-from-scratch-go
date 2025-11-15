@@ -105,7 +105,7 @@ func eval(stmt ast.BaseCmd, stdIn io.ReadCloser, stdOut io.WriteCloser, stdErr i
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					fmt.Fprintf(stdErr, "cat: %s: No such file or directory\n", arg.Val)
-					return
+					continue
 				}
 				finOut += string(output)
 			}
