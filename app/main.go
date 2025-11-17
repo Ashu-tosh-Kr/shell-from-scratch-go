@@ -1,17 +1,30 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/charmbracelet/x/term"
 	"github.com/codecrafters-io/shell-starter-go/app/evalutater"
 	"github.com/codecrafters-io/shell-starter-go/app/parser"
+	readline "github.com/codecrafters-io/shell-starter-go/app/readLine"
 	"github.com/codecrafters-io/shell-starter-go/app/tokenizer"
 )
 
+func goRaw() {
+	// Get current terminal state
+	oldState, err := term.MakeRaw(os.Stdin.Fd())
+	if err != nil {
+		panic(err)
+	}
+	// Restore state on exit
+	defer term.Restore(os.Stdin.Fd(), oldState)
+}
+
 func main() {
+	goRaw()
+	rd := readline.NewReadLine(os.Stdin, os.Stdout, os.Stderr)
 	f, _ := os.Create("history.txt")
 	f.Close()
 	historyFile, err := os.OpenFile("history.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
@@ -21,7 +34,7 @@ func main() {
 	defer historyFile.Close()
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-		b, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+		b, err := rd.Read()
 		if err != nil {
 			log.Fatal("error reading input")
 		}
