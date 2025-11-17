@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -32,6 +34,10 @@ func main() {
 		fmt.Fprint(os.Stdout, "$ ")
 		b, err := rd.Read()
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				fmt.Fprintf(os.Stdout, "\r\n")
+				continue
+			}
 			log.Fatal("error reading input")
 		}
 		historyFile.Write(b)

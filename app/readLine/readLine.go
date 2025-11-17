@@ -20,11 +20,23 @@ func (rl *ReadLine) Read() ([]byte, error) {
 	read := 0
 	for {
 		n, _ := rl.Stdin.Read(buf[read:])
-		rl.Echo(buf[read:n])
+		for i := read; i < read+n; i++ {
+			if buf[i] == 0x03 { // Ctrl-C
+				return make([]byte, 1), io.EOF
 
+			}
+		}
+		rl.Echo(buf[read : read+n])
+
+		read += n
 	}
+
 }
 
 func (rl *ReadLine) Echo(b []byte) {
 	fmt.Fprint(rl.Stdout, string(b))
+}
+
+func parseInput() {
+
 }
