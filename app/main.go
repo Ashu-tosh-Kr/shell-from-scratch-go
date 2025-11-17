@@ -27,6 +27,9 @@ func main() {
 		}
 		historyFile.Write(b)
 		b = b[:len(b)-1]
+		if len(b) == 0 {
+			continue
+		}
 		t := tokenizer.NewTokenizer(string(b))
 		p := parser.NewParser(t)
 		cmds := p.Parse()
