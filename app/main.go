@@ -12,7 +12,7 @@ import (
 	"github.com/codecrafters-io/shell-starter-go/app/tokenizer"
 )
 
-func goRaw() {
+func main() {
 	// Get current terminal state
 	oldState, err := term.MakeRaw(os.Stdin.Fd())
 	if err != nil {
@@ -20,10 +20,6 @@ func goRaw() {
 	}
 	// Restore state on exit
 	defer term.Restore(os.Stdin.Fd(), oldState)
-}
-
-func main() {
-	goRaw()
 	rd := readline.NewReadLine(os.Stdin, os.Stdout, os.Stderr)
 	f, _ := os.Create("history.txt")
 	f.Close()
