@@ -68,16 +68,19 @@ func (rl *ReadLine) Read() ([]byte, error) {
 }
 
 func (rl *ReadLine) handleInput(runeBuf []rune) bool {
-	for _, run := range runeBuf {
-		switch run {
+	i := 0
+	for i < len(runeBuf) {
+
+		switch runeBuf[i] {
 		case 0x03: // CTRL + C
 			fmt.Fprint(rl.Stdout, "\r\n")
 			rl.buf = rl.buf[:0]
 			rl.redrawLine()
+			i++
 		case 13: // /r/n
 			fmt.Fprint(rl.Stdout, "\r\n")
 			return true
-		case 127:
+		case 127: // backspace
 			if rl.cursor == 0 {
 				return false
 			}
@@ -88,10 +91,28 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 				rl.buf = append(rl.buf[:rl.cursor], rl.buf[rl.cursor+1:]...)
 			}
 			rl.redrawLine()
+			i++
+		case '\x1b':
+			if i+2 < len(runeBuf) && runeBuf[i+1] == '[' {
+				switch runeBuf[i+2] {
+				case 'A':
+					break
+				case 'B':
+					break
+				case 'C':
+					rl.cursor = min(rl.cursor+1, len(rl.buf))
+					rl.redrawLine()
+				case 'D':
+					rl.cursor = max(rl.cursor-1, 0)
+					rl.redrawLine()
+				}
+				i += 3
+			}
 		default:
-			rl.buf = append(rl.buf, run)
+			rl.buf = append(rl.buf, runeBuf[i])
 			rl.cursor++
 			rl.redrawLine()
+			i++
 		}
 
 	}
@@ -103,12 +124,11 @@ func (rl *ReadLine) redrawLine() {
 	line := "$ " + string(rl.buf)
 	fmt.Print(line)
 	fmt.Print("\x1b[K")
-	// wanted := len("$ ") + rl.cursor
-	// current := len(line)
-	// diff := current - wanted
-	// // fmt.Println("c")
-	// if diff > 0 {
-	// 	// Move left diff
-	// 	fmt.Printf("\x1b[%dD", diff)
-	// }
+	wanted := len("$ ") + rl.cursor
+	current := len(line)
+	diff := current - wanted
+	if diff > 0 {
+		// Move left diff
+		fmt.Printf("\x1b[%dD", diff)
+	}
 }
