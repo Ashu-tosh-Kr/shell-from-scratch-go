@@ -28,7 +28,6 @@ func NewReadLine(Stdin io.ReadCloser, Stdout io.WriteCloser, Stderr io.WriteClos
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	defer historyFile.Close()
 	roHist, _ := os.Open("history.txt")
 	rdr := bufio.NewReader(roHist)
 	histDat := make([]string, 0)
@@ -51,6 +50,9 @@ func (rl *ReadLine) Read() ([]byte, error) {
 	}
 	// Restore state on exit
 	defer term.Restore(os.Stdin.Fd(), oldState)
+
+	// reset the history cursor so that after every cmd exec it starts from the last cmd
+	rl.histCursor = -1
 
 	byteBuf := make([]byte, 1024)
 	fmt.Fprint(os.Stdout, "$ ")
@@ -75,11 +77,16 @@ func (rl *ReadLine) Read() ([]byte, error) {
 			rl.buf = rl.buf[:0]
 			rl.histF.Write(out)
 			rl.histF.Write([]byte{'\n'})
+			rl.histDat = append(rl.histDat, string(out)+"\n")
 			return out, nil
 		}
 
 	}
 
+}
+
+func (rl *ReadLine) Close() {
+	rl.histF.Close()
 }
 
 func (rl *ReadLine) handleInput(runeBuf []rune) bool {

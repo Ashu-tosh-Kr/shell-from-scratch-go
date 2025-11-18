@@ -12,7 +12,7 @@ import (
 
 func main() {
 	rd := readline.NewReadLine(os.Stdin, os.Stdout, os.Stderr)
-
+	defer rd.Close()
 	for {
 		b, err := rd.Read()
 		if err != nil {
