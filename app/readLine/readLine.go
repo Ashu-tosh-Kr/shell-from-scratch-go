@@ -109,7 +109,15 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 				i += 3
 			}
 		default:
-			rl.buf = append(rl.buf, runeBuf[i])
+			tmp := make([]rune, rl.cursor)
+			copy(tmp, rl.buf[:rl.cursor])
+			tmp = append(tmp, runeBuf[i])
+			if rl.cursor == len(rl.buf) {
+				rl.buf = tmp
+			} else {
+				rl.buf = append(tmp, rl.buf[rl.cursor:]...)
+
+			}
 			rl.cursor++
 			rl.redrawLine()
 			i++
