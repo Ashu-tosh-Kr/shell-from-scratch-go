@@ -25,7 +25,7 @@ func NewReadLine(Stdin io.ReadCloser, Stdout io.WriteCloser, Stderr io.WriteClos
 		log.Fatal(err.Error())
 	}
 	defer historyFile.Close()
-	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 0), cursor: 2, histF: historyFile}
+	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 0), cursor: 0, histF: historyFile}
 }
 
 func (rl *ReadLine) Read() ([]byte, error) {
@@ -77,6 +77,17 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 		case 13: // /r/n
 			fmt.Fprint(rl.Stdout, "\r\n")
 			return true
+		case 127:
+			if rl.cursor == 0 {
+				return false
+			}
+			rl.cursor--
+			if rl.cursor == len(rl.buf)-1 {
+				rl.buf = rl.buf[:rl.cursor]
+			} else {
+				rl.buf = append(rl.buf[:rl.cursor], rl.buf[rl.cursor+1:]...)
+			}
+			rl.redrawLine()
 		default:
 			rl.buf = append(rl.buf, run)
 			rl.cursor++
@@ -84,7 +95,6 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 		}
 
 	}
-	// rl.echo(rl.buf)
 	return false
 }
 
@@ -92,7 +102,7 @@ func (rl *ReadLine) redrawLine() {
 	fmt.Fprint(rl.Stdout, "\r")
 	line := "$ " + string(rl.buf)
 	fmt.Print(line)
-	// fmt.Print("\x1b[K")
+	fmt.Print("\x1b[K")
 	// wanted := len("$ ") + rl.cursor
 	// current := len(line)
 	// diff := current - wanted
