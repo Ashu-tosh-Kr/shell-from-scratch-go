@@ -48,12 +48,7 @@ func (rl *ReadLine) Read() ([]byte, error) {
 			copy(byteBuf, byteBuf[size:n])
 			n -= size
 		}
-		done, err := rl.handleInput(runeBuf)
-		if err != nil {
-			rl.cursor = 0
-			rl.buf = rl.buf[:0]
-			return nil, err
-		}
+		done := rl.handleInput(runeBuf)
 		if done {
 			collector := make([]byte, 32)
 			out := make([]byte, 0)
@@ -72,7 +67,7 @@ func (rl *ReadLine) Read() ([]byte, error) {
 
 }
 
-func (rl *ReadLine) handleInput(runeBuf []rune) (bool, error) {
+func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 	for _, run := range runeBuf {
 		switch run {
 		case 0x03: // CTRL + C
@@ -81,7 +76,7 @@ func (rl *ReadLine) handleInput(runeBuf []rune) (bool, error) {
 			rl.redrawLine()
 		case 13: // /r/n
 			fmt.Fprint(rl.Stdout, "\r\n")
-			return true, nil
+			return true
 		default:
 			rl.buf = append(rl.buf, run)
 			rl.cursor++
@@ -90,7 +85,7 @@ func (rl *ReadLine) handleInput(runeBuf []rune) (bool, error) {
 
 	}
 	// rl.echo(rl.buf)
-	return false, nil
+	return false
 }
 
 func (rl *ReadLine) redrawLine() {
