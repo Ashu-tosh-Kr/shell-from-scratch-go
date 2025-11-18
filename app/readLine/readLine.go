@@ -114,6 +114,7 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 			}
 			rl.redrawLine()
 			i++
+
 		case '\x1b':
 			if i+2 < len(runeBuf) && runeBuf[i+1] == '[' {
 				switch runeBuf[i+2] {
