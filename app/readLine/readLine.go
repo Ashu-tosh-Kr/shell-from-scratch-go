@@ -1,6 +1,8 @@
 package readline
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,12 +13,14 @@ import (
 )
 
 type ReadLine struct {
-	Stdin  io.ReadCloser
-	Stdout io.WriteCloser
-	Stderr io.WriteCloser
-	buf    []rune
-	cursor int
-	histF  *os.File
+	Stdin      io.ReadCloser
+	Stdout     io.WriteCloser
+	Stderr     io.WriteCloser
+	buf        []rune
+	cursor     int
+	histF      *os.File
+	histDat    []string
+	histCursor int
 }
 
 func NewReadLine(Stdin io.ReadCloser, Stdout io.WriteCloser, Stderr io.WriteCloser) ReadLine {
@@ -25,7 +29,18 @@ func NewReadLine(Stdin io.ReadCloser, Stdout io.WriteCloser, Stderr io.WriteClos
 		log.Fatal(err.Error())
 	}
 	defer historyFile.Close()
-	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 0), cursor: 0, histF: historyFile}
+	roHist, _ := os.Open("history.txt")
+	rdr := bufio.NewReader(roHist)
+	histDat := make([]string, 0)
+	for {
+		ln, err := rdr.ReadString('\n')
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		histDat = append(histDat, ln)
+	}
+	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 0), cursor: 0, histF: historyFile, histDat: histDat, histCursor: -1}
+
 }
 
 func (rl *ReadLine) Read() ([]byte, error) {
@@ -96,9 +111,33 @@ func (rl *ReadLine) handleInput(runeBuf []rune) bool {
 			if i+2 < len(runeBuf) && runeBuf[i+1] == '[' {
 				switch runeBuf[i+2] {
 				case 'A':
-					break
+					if rl.histCursor == len(rl.histDat)-1 {
+						break
+					}
+					rl.histCursor++
+					ln := rl.histDat[len(rl.histDat)-1-rl.histCursor]
+					tmp := make([]rune, 0)
+					for _, char := range ln {
+						tmp = append(tmp, rune(char))
+					}
+					tmp = tmp[:len(tmp)-1]
+					rl.buf = tmp
+					rl.cursor = len(tmp)
+					rl.redrawLine()
 				case 'B':
-					break
+					if rl.histCursor == 0 {
+						break
+					}
+					rl.histCursor--
+					ln := rl.histDat[len(rl.histDat)-1-rl.histCursor]
+					tmp := make([]rune, 0)
+					for _, char := range ln {
+						tmp = append(tmp, rune(char))
+					}
+					tmp = tmp[:len(tmp)-1]
+					rl.buf = tmp
+					rl.cursor = len(tmp)
+					rl.redrawLine()
 				case 'C':
 					rl.cursor = min(rl.cursor+1, len(rl.buf))
 					rl.redrawLine()
