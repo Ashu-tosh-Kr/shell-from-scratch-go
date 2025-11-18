@@ -3,7 +3,11 @@ package readline
 import (
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"unicode/utf8"
+
+	"github.com/charmbracelet/x/term"
 )
 
 type ReadLine struct {
@@ -12,14 +16,29 @@ type ReadLine struct {
 	Stderr io.WriteCloser
 	buf    []rune
 	cursor int
+	histF  *os.File
 }
 
 func NewReadLine(Stdin io.ReadCloser, Stdout io.WriteCloser, Stderr io.WriteCloser) ReadLine {
-	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 4096), cursor: 2}
+	historyFile, err := os.OpenFile("history.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer historyFile.Close()
+	return ReadLine{Stdin: Stdin, Stdout: Stdout, Stderr: Stderr, buf: make([]rune, 0), cursor: 2, histF: historyFile}
 }
 
 func (rl *ReadLine) Read() ([]byte, error) {
+	// Get current terminal state
+	oldState, err := term.MakeRaw(os.Stdin.Fd())
+	if err != nil {
+		panic(err)
+	}
+	// Restore state on exit
+	defer term.Restore(os.Stdin.Fd(), oldState)
+
 	byteBuf := make([]byte, 1024)
+	fmt.Fprint(os.Stdout, "$ ")
 	for {
 		n, _ := rl.Stdin.Read(byteBuf)
 		runeBuf := make([]rune, 0)
@@ -29,21 +48,41 @@ func (rl *ReadLine) Read() ([]byte, error) {
 			copy(byteBuf, byteBuf[size:n])
 			n -= size
 		}
-		// fmt.Println("a")
-		rl.handleInput(runeBuf)
+		done, err := rl.handleInput(runeBuf)
+		if err != nil {
+			rl.cursor = 0
+			rl.buf = rl.buf[:0]
+			return nil, err
+		}
+		if done {
+			collector := make([]byte, 32)
+			out := make([]byte, 0)
+			for _, run := range rl.buf {
+				utf8.EncodeRune(collector, run)
+				out = append(out, byte(run))
+			}
+			rl.cursor = 0
+			rl.buf = rl.buf[:0]
+			rl.histF.Write(out)
+			rl.histF.Write([]byte{'\n'})
+			return out, nil
+		}
 
 	}
 
 }
 
-func (rl *ReadLine) handleInput(runeBuf []rune) ([]byte, error) {
+func (rl *ReadLine) handleInput(runeBuf []rune) (bool, error) {
 	for _, run := range runeBuf {
 		switch run {
-		case 0x03:
-			return make([]byte, 1), io.EOF
-		// case :
+		case 0x03: // CTRL + C
+			fmt.Fprint(rl.Stdout, "\r\n")
+			rl.buf = rl.buf[:0]
+			rl.redrawLine()
+		case 13: // /r/n
+			fmt.Fprint(rl.Stdout, "\r\n")
+			return true, nil
 		default:
-			// fmt.Println("b")
 			rl.buf = append(rl.buf, run)
 			rl.cursor++
 			rl.redrawLine()
@@ -51,7 +90,7 @@ func (rl *ReadLine) handleInput(runeBuf []rune) ([]byte, error) {
 
 	}
 	// rl.echo(rl.buf)
-	return make([]byte, 2), nil
+	return false, nil
 }
 
 func (rl *ReadLine) redrawLine() {
